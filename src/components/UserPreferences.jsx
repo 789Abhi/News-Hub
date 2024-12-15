@@ -1,28 +1,36 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { setPreferences } from "../store/preferencesSlice";
+import { fetchNews } from "../store/newsSlice";
 
-const UserPreferences = ({ onPreferencesChange }) => {
-  const [preferences, setPreferences] = useState(() => {
-    const savedPreferences = localStorage.getItem('userPreferences');
-    return savedPreferences ? JSON.parse(savedPreferences) : {
-      sources: [],
-      categories: [],
-      authors: []
-    };
-  });
+const UserPreferences = () => {
+  const dispatch = useDispatch();
+  const { sources, categories, authors } = useSelector((state) => state.news);
+  const preferences = useSelector((state) => state.preferences);
+  const [localPreferences, setLocalPreferences] = useState(preferences);
 
   useEffect(() => {
-    localStorage.setItem('userPreferences', JSON.stringify(preferences));
-    onPreferencesChange(preferences);
-  }, [preferences, onPreferencesChange]);
+    setLocalPreferences(preferences);
+  }, [preferences]);
 
   const handleChange = (e, type) => {
     const value = e.target.value;
-    setPreferences(prev => ({
-      ...prev,
-      [type]: prev[type].includes(value)
-        ? prev[type].filter(item => item !== value)
-        : [...prev[type], value]
-    }));
+    const updatedPreferences = {
+      ...localPreferences,
+      [type]: localPreferences[type].includes(value)
+        ? localPreferences[type].filter((item) => item !== value)
+        : [...localPreferences[type], value],
+    };
+    setLocalPreferences(updatedPreferences);
+    dispatch(setPreferences(updatedPreferences));
+    dispatch(
+      fetchNews({
+        country: preferences.country,
+        category: updatedPreferences.categories[0] || "",
+        page: 1,
+        pageSize: 10,
+      })
+    );
   };
 
   return (
@@ -32,13 +40,13 @@ const UserPreferences = ({ onPreferencesChange }) => {
         <div>
           <h3 className="text-lg font-semibold mb-2">Sources</h3>
           <div className="flex flex-wrap gap-2">
-            {['TechCrunch', 'Wired', 'CNN'].map(source => (
+            {sources.map((source) => (
               <label key={source} className="inline-flex items-center">
                 <input
                   type="checkbox"
                   value={source}
-                  checked={preferences.sources.includes(source)}
-                  onChange={(e) => handleChange(e, 'sources')}
+                  checked={localPreferences.sources.includes(source)}
+                  onChange={(e) => handleChange(e, "sources")}
                   className="form-checkbox h-5 w-5 text-blue-600"
                 />
                 <span className="ml-2">{source}</span>
@@ -49,13 +57,13 @@ const UserPreferences = ({ onPreferencesChange }) => {
         <div>
           <h3 className="text-lg font-semibold mb-2">Categories</h3>
           <div className="flex flex-wrap gap-2">
-            {['Technology', 'Science', 'Politics'].map(category => (
+            {categories.map((category) => (
               <label key={category} className="inline-flex items-center">
                 <input
                   type="checkbox"
                   value={category}
-                  checked={preferences.categories.includes(category)}
-                  onChange={(e) => handleChange(e, 'categories')}
+                  checked={localPreferences.categories.includes(category)}
+                  onChange={(e) => handleChange(e, "categories")}
                   className="form-checkbox h-5 w-5 text-blue-600"
                 />
                 <span className="ml-2">{category}</span>
@@ -66,13 +74,13 @@ const UserPreferences = ({ onPreferencesChange }) => {
         <div>
           <h3 className="text-lg font-semibold mb-2">Authors</h3>
           <div className="flex flex-wrap gap-2">
-            {['John Doe', 'Jane Smith', 'Alice Johnson'].map(author => (
+            {authors.map((author) => (
               <label key={author} className="inline-flex items-center">
                 <input
                   type="checkbox"
                   value={author}
-                  checked={preferences.authors.includes(author)}
-                  onChange={(e) => handleChange(e, 'authors')}
+                  checked={localPreferences.authors.includes(author)}
+                  onChange={(e) => handleChange(e, "authors")}
                   className="form-checkbox h-5 w-5 text-blue-600"
                 />
                 <span className="ml-2">{author}</span>
@@ -86,4 +94,3 @@ const UserPreferences = ({ onPreferencesChange }) => {
 };
 
 export default UserPreferences;
-
