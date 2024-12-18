@@ -91,20 +91,45 @@ const Home = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Latest News</h1>
-      <div className="lg:grid flex flex-col-reverse grid-cols-1 md:grid-cols-3 gap-8">
-        <div className="md:col-span-2">
-          <ArticleList articles={articles} />
-          <Pagination
-            currentPage={currentPage}
-            totalPages={Math.ceil(totalResults / pageSize)}
-            onPageChange={handlePageChange}
-          />
+      {articles.length !== 0 ? (
+        <>
+          <h1 className="text-3xl font-bold mb-6">Latest News</h1>
+        </>
+      ) : (
+        <div className="pb-3">
+          <h1 className="text-3xl font-bold mb-6 text-center">No News Found</h1>
+          <p className="text-center">
+            We are constantly working to cover the News Over the Glob !..
+          </p>
         </div>
-        <div>
-          <UserPreferences />
-        </div>
-      </div>
+      )}
+
+      {articles.length !== 0 ? (
+        <>
+          <div className="lg:grid flex flex-col-reverse grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="md:col-span-2">
+              <ArticleList articles={articles} />
+              <Pagination
+                currentPage={currentPage}
+                totalPages={Math.ceil(totalResults / pageSize)}
+                onPageChange={handlePageChange}
+              />
+            </div>
+            <div>
+              <UserPreferences />
+            </div>
+          </div>
+        </>
+      ) : (
+        <>
+          <div>
+            <img
+              className="w-[500px] mx-auto h-[500px] object-cover"
+              src="src\images\nonews people.webp"
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 };

@@ -10,6 +10,9 @@ const SearchFilters = ({ filters, setFilters, onSearch }) => {
   const { sources, categories } = useSelector((state) => state.news);
   const preferences = useSelector((state) => state.preferences);
 
+  // Get today's date in YYYY-MM-DD format
+  const today = new Date().toISOString().split("T")[0];
+
   // Sync with URL parameters
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
@@ -19,13 +22,13 @@ const SearchFilters = ({ filters, setFilters, onSearch }) => {
     const startDate = queryParams.get("startDate") || filters.startDate;
     const endDate = queryParams.get("endDate") || filters.endDate;
 
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
       keyword,
       source,
       category,
       startDate,
-      endDate
+      endDate,
     }));
   }, [location.search]);
 
@@ -50,23 +53,25 @@ const SearchFilters = ({ filters, setFilters, onSearch }) => {
     setFilters(resetFilters);
 
     // Fetch all news
-    dispatch(fetchNews({
-      country: preferences.country,
-      page: 1,
-      pageSize: 20,
-    }));
+    dispatch(
+      fetchNews({
+        country: preferences.country,
+        page: 1,
+        pageSize: 20,
+      })
+    );
   };
 
   const handleSearch = () => {
     const searchParams = new URLSearchParams();
-    
+
     // Add all non-empty filters to URL
     if (filters.keyword) searchParams.set("q", filters.keyword);
     if (filters.source) searchParams.set("source", filters.source);
     if (filters.category) searchParams.set("category", filters.category);
     if (filters.startDate) searchParams.set("startDate", filters.startDate);
     if (filters.endDate) searchParams.set("endDate", filters.endDate);
-    
+
     navigate(`/search?${searchParams.toString()}`, { replace: true });
     onSearch(filters);
   };
@@ -88,6 +93,7 @@ const SearchFilters = ({ filters, setFilters, onSearch }) => {
             name="startDate"
             value={filters.startDate}
             onChange={handleChange}
+            max={today} // Prevent selecting future dates
             className="p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
             placeholder="Start Date"
           />
@@ -96,6 +102,8 @@ const SearchFilters = ({ filters, setFilters, onSearch }) => {
             name="endDate"
             value={filters.endDate}
             onChange={handleChange}
+            max={today} // Prevent selecting future dates
+            min={filters.startDate || undefined} // Ensure end date is not before start date
             className="p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
             placeholder="End Date"
           />

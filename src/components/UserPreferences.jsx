@@ -3,14 +3,14 @@ import { useSelector, useDispatch } from "react-redux";
 import { setPreferences } from "../store/preferencesSlice";
 import { fetchNews } from "../store/newsSlice";
 import { ChevronDown, ChevronUp, Filter, Trash2 } from "lucide-react";
-import debounce from 'lodash/debounce';
+import debounce from "lodash/debounce";
 
-const PreferenceSection = ({ 
-  title, 
-  items, 
-  selectedItems, 
-  onItemToggle, 
-  maxInitialDisplay = 10 
+const PreferenceSection = ({
+  title,
+  items,
+  selectedItems,
+  onItemToggle,
+  maxInitialDisplay = 10,
 }) => {
   const [showAll, setShowAll] = useState(false);
   const displayedItems = showAll ? items : items.slice(0, maxInitialDisplay);
@@ -20,8 +20,8 @@ const PreferenceSection = ({
       <h2 className="text-xl font-semibold text-gray-800 mb-3">{title}</h2>
       <div className="grid grid-cols-2 gap-2">
         {displayedItems.map((item) => (
-          <label 
-            key={item} 
+          <label
+            key={item}
             className="flex items-center space-x-2 cursor-pointer"
           >
             <input
@@ -110,7 +110,7 @@ const UserPreferences = () => {
       sources: [],
       categories: [],
       authors: [],
-      country: preferences.country // Keep the country unchanged
+      country: preferences.country, // Keep the country unchanged
     };
 
     // Update local state
@@ -134,9 +134,9 @@ const UserPreferences = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 lg:py-6 py-0 ">
+    <div className="container mx-auto px-4 lg:py-6 lg:pt-0 py-0 ">
       {/* Mobile Dropdown Toggle Button - Hidden on Desktop */}
-      <button 
+      <button
         onClick={() => setIsMobileDropdownOpen(!isMobileDropdownOpen)}
         className="lg:hidden fixed bottom-4 right-4 bg-blue-600 text-white rounded-full p-3 shadow-lg z-50 flex items-center"
       >
@@ -145,29 +145,22 @@ const UserPreferences = () => {
       </button>
 
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl lg:block font-bold text-gray-900 mb-6 hidden">
-          Your News Preferences
+        <h1 className="text-xl lg:block font-bold text-gray-900 mb-6 hidden">
+          Set Your News Preferences
         </h1>
-        
-        {/* Clear Preferences Button */}
-        <button 
-          onClick={handleClearPreferences}
-          className="hidden lg:flex items-center text-red-600 hover:text-red-800 transition-colors mb-4"
-        >
-          <Trash2 size={20} className="mr-2" />
-          Clear All Preferences
-        </button>
       </div>
 
       {/* Preferences Container - Responsive Display */}
-      <div className={`
-        ${isMobileDropdownOpen ? 'block' : 'hidden lg:block'}
+      <div
+        className={`
+        ${isMobileDropdownOpen ? "block" : "hidden lg:block"}
         fixed lg:static inset-0 lg:inset-auto 
         bg-white lg:bg-transparent 
         z-40 lg:z-auto 
         overflow-y-auto lg:overflow-visible 
         pt-16 lg:pt-0 px-4 lg:px-0
-      `}>
+      `}
+      >
         <div className="lg:static bg-white lg:bg-transparent p-4 lg:p-0 rounded-lg lg:rounded-none shadow-lg lg:shadow-none">
           <PreferenceSection
             title="Sources"
@@ -190,11 +183,11 @@ const UserPreferences = () => {
             onItemToggle={handleChange}
           />
 
-          {/* Clear Preferences Button for Mobile */}
-          <div className="lg:hidden text-center mt-4">
-            <button 
+          {/* Clear Preferences Button at the Bottom - for Both Mobile and Desktop */}
+          <div className="bg-white shadow rounded-lg p-4 mt-4">
+            <button
               onClick={handleClearPreferences}
-              className="flex items-center justify-center w-full bg-red-600 text-white px-4 py-2 rounded-lg mb-4"
+              className="flex items-center justify-center w-full bg-red-600 text-white px-4 py-3 rounded-lg hover:bg-red-700 transition-colors"
             >
               <Trash2 size={20} className="mr-2" />
               Clear All Preferences
@@ -203,7 +196,7 @@ const UserPreferences = () => {
 
           {/* Close button for mobile */}
           <div className="lg:hidden text-center mt-4">
-            <button 
+            <button
               onClick={() => setIsMobileDropdownOpen(false)}
               className="bg-blue-600 text-white px-4 py-2 rounded-lg"
             >

@@ -14,7 +14,7 @@ export const fetchNews = createAsyncThunk(
   async (params, { getState }) => {
     const { preferences } = getState();
     const { 
-      country = 'us', 
+      country = 'ind', 
       category = '', 
       page = 1, 
       pageSize = 10, 

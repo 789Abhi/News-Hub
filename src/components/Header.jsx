@@ -18,12 +18,12 @@ const Header = () => {
     if (searchTerm.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchTerm)}`);
     } else {
-      navigate('/search');
+      navigate("/search");
     }
   }, 300);
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleSearch();
     }
   };
@@ -32,8 +32,12 @@ const Header = () => {
     <header className="bg-blue-600 text-white shadow-md sticky top-0">
       <nav className="container mx-auto px-4 py-4 flex flex-col justify-center items-center gap-4">
         <div>
-          <Link to="/" className="text-3xl font-bold">
-            NewsHub
+          <Link to="/" className="text-3xl font-bold flex items-center gap-2">
+            <img
+              className="w-12 h-12 mt-2 object-contain"
+              src="src\images\favicon.png"
+            />
+            <h1 className="lg:text-[36px] text-[26px]"> NEWS SYNC</h1>
           </Link>
         </div>
 

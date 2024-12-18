@@ -8,13 +8,13 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
     }
 
     const pages = [];
-    
+
     // Always show first page
     pages.push(1);
 
     // Add ellipsis and surrounding pages if current page is far from start
     if (currentPage > 3) {
-      pages.push('...');
+      pages.push("...");
     }
 
     // Determine range of pages around current page
@@ -29,8 +29,8 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
 
     // Add ellipsis if needed
     if (currentPage < totalPages - 2) {
-      if (!pages.includes('...')) {
-        pages.push('...');
+      if (!pages.includes("...")) {
+        pages.push("...");
       }
     }
 
@@ -42,13 +42,24 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
     return pages;
   };
 
+  const handlePageChange = (page) => {
+    // Scroll to top of the page
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+
+    // Call the page change handler
+    onPageChange(page);
+  };
+
   const pageNumbers = generatePageNumbers();
 
   return (
     <nav className="flex justify-center mt-8">
       {/* Previous button */}
       <button
-        onClick={() => onPageChange(currentPage - 1)}
+        onClick={() => handlePageChange(currentPage - 1)}
         disabled={currentPage === 1}
         className={`px-4 py-2 mr-2 rounded ${
           currentPage === 1
@@ -63,11 +74,11 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
       <ul className="flex space-x-2">
         {pageNumbers.map((number, index) => (
           <li key={index}>
-            {number === '...' ? (
+            {number === "..." ? (
               <span className="px-4 py-2">...</span>
             ) : (
               <button
-                onClick={() => onPageChange(number)}
+                onClick={() => handlePageChange(number)}
                 className={`px-4 py-2 rounded ${
                   currentPage === number
                     ? "bg-blue-500 text-white"
@@ -83,7 +94,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
 
       {/* Next button */}
       <button
-        onClick={() => onPageChange(currentPage + 1)}
+        onClick={() => handlePageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
         className={`px-4 py-2 ml-2 rounded ${
           currentPage === totalPages
