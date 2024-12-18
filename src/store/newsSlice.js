@@ -13,12 +13,21 @@ export const fetchNews = createAsyncThunk(
   'news/fetchNews',
   async (params, { getState }) => {
     const { preferences } = getState();
-    const { country, category, page, pageSize, q, source } = params;
+    const { 
+      country = 'us', 
+      category = '', 
+      page = 1, 
+      pageSize = 10, 
+      q = '', 
+      source = '',
+      startDate = '',
+      endDate = ''
+    } = params;
 
     try {
-      const newsApiUrl = `${NEWS_API_ROOT}/top-headlines?country=${country}&category=${category}&page=${page}&pageSize=${pageSize}&q=${q}&apiKey=${NEWS_API_KEY}`;
+      const newsApiUrl = `${NEWS_API_ROOT}/top-headlines?country=${country}&category=${category}&page=${page}&pageSize=100&q=${q}&apiKey=${NEWS_API_KEY}`;
       const nytUrl = `${NYT_API_ROOT}/home.json?api-key=${NYT_API_KEY}`;
-      const guardianUrl = `${GUARDIAN_API_ROOT}/search?api-key=${GUARDIAN_API_KEY}&page=${page}&page-size=${pageSize}&q=${q}`;
+      const guardianUrl = `${GUARDIAN_API_ROOT}/search?api-key=${GUARDIAN_API_KEY}&page-size=100&q=${q}`;
 
       const [newsApiResponse, nytResponse, guardianResponse] = await Promise.allSettled([
         axios.get(newsApiUrl),
@@ -62,7 +71,16 @@ export const fetchNews = createAsyncThunk(
 
       let allArticles = [...newsApiArticles, ...nytArticles, ...guardianArticles];
 
-      // Enhanced keyword filtering (case-insensitive, search in title and description)
+      // Date filtering
+      if (startDate || endDate) {
+        allArticles = allArticles.filter(article => {
+          const articleDate = new Date(article.publishedAt);
+          return (!startDate || articleDate >= new Date(startDate)) &&
+                 (!endDate || articleDate <= new Date(endDate));
+        });
+      }
+
+      // Keyword filtering
       if (q) {
         const lowercaseKeyword = q.toLowerCase();
         allArticles = allArticles.filter(article => 
@@ -71,7 +89,10 @@ export const fetchNews = createAsyncThunk(
         );
       }
 
-      // Existing preference and source filtering
+      // Limit to 100 articles
+      allArticles = allArticles.slice(0, 100);
+
+      // Source and category filtering
       if (preferences.sources.length > 0) {
         allArticles = allArticles.filter(article => preferences.sources.includes(article.source));
       }
@@ -81,24 +102,19 @@ export const fetchNews = createAsyncThunk(
       if (preferences.categories.length > 0) {
         allArticles = allArticles.filter(article => preferences.categories.includes(article.category));
       }
-      if (preferences.authors.length > 0) {
-        allArticles = allArticles.filter(article => preferences.authors.includes(article.author));
-      }
 
-      // Sort articles by publishedAt date
+      // Sort and paginate
       allArticles.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
 
-      // Extract unique sources, categories, and authors
-      const sources = [...new Set(allArticles.map(article => article.source))];
-      const categories = [...new Set(allArticles.map(article => article.category))];
-      const authors = [...new Set(allArticles.map(article => article.author).filter(Boolean))];
+      // Paginate results
+      const paginatedArticles = allArticles.slice((page - 1) * pageSize, page * pageSize);
 
       return {
-        articles: allArticles.slice(0, pageSize),
+        articles: paginatedArticles,
         totalResults: allArticles.length,
-        sources,
-        categories,
-        authors,
+        sources: [...new Set(allArticles.map(article => article.source))],
+        categories: [...new Set(allArticles.map(article => article.category))],
+        authors: [...new Set(allArticles.map(article => article.author).filter(Boolean))],
       };
     } catch (error) {
       console.error('Error fetching news:', error);
@@ -118,7 +134,12 @@ const newsSlice = createSlice({
     categories: [],
     authors: [],
   },
-  reducers: {},
+  reducers: {
+    clearSearchResults: (state) => {
+      state.articles = [];
+      state.totalResults = 0;
+    }
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchNews.pending, (state) => {
@@ -139,4 +160,5 @@ const newsSlice = createSlice({
   },
 });
 
+export const { clearSearchResults } = newsSlice.actions;
 export default newsSlice.reducer;

@@ -1,41 +1,74 @@
-import React from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { setPreferences } from "../store/preferencesSlice";
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, useLocation } from "react-router-dom";
+import { clearSearchResults, fetchNews } from "../store/newsSlice";
 
 const SearchFilters = ({ filters, setFilters, onSearch }) => {
   const dispatch = useDispatch();
-  const preferences = useSelector((state) => state.preferences);
+  const navigate = useNavigate();
+  const location = useLocation();
   const { sources, categories } = useSelector((state) => state.news);
+  const preferences = useSelector((state) => state.preferences);
+
+  // Sync with URL parameters
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const keyword = queryParams.get("q") || filters.keyword;
+    const source = queryParams.get("source") || filters.source;
+    const category = queryParams.get("category") || filters.category;
+    const startDate = queryParams.get("startDate") || filters.startDate;
+    const endDate = queryParams.get("endDate") || filters.endDate;
+
+    setFilters(prev => ({
+      ...prev,
+      keyword,
+      source,
+      category,
+      startDate,
+      endDate
+    }));
+  }, [location.search]);
 
   const handleChange = (e) => {
     setFilters({ ...filters, [e.target.name]: e.target.value });
   };
 
-  const handlePreferenceChange = (e) => {
-    const { name, value, checked } = e.target;
-    let updatedPreferences;
-    if (checked) {
-      updatedPreferences = {
-        ...preferences,
-        [name]: [...preferences[name], value],
-      };
-    } else {
-      updatedPreferences = {
-        ...preferences,
-        [name]: preferences[name].filter((item) => item !== value),
-      };
-    }
-    dispatch(setPreferences(updatedPreferences));
-  };
-
   const handleResetFilters = () => {
-    setFilters({
+    // Clear filters
+    const resetFilters = {
       keyword: "",
       startDate: "",
       endDate: "",
       source: "",
       category: "",
-    });
+    };
+
+    // Clear URL parameters
+    navigate(location.pathname, { replace: true });
+
+    // Reset filters
+    setFilters(resetFilters);
+
+    // Fetch all news
+    dispatch(fetchNews({
+      country: preferences.country,
+      page: 1,
+      pageSize: 20,
+    }));
+  };
+
+  const handleSearch = () => {
+    const searchParams = new URLSearchParams();
+    
+    // Add all non-empty filters to URL
+    if (filters.keyword) searchParams.set("q", filters.keyword);
+    if (filters.source) searchParams.set("source", filters.source);
+    if (filters.category) searchParams.set("category", filters.category);
+    if (filters.startDate) searchParams.set("startDate", filters.startDate);
+    if (filters.endDate) searchParams.set("endDate", filters.endDate);
+    
+    navigate(`/search?${searchParams.toString()}`, { replace: true });
+    onSearch(filters);
   };
 
   return (
@@ -56,6 +89,7 @@ const SearchFilters = ({ filters, setFilters, onSearch }) => {
             value={filters.startDate}
             onChange={handleChange}
             className="p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+            placeholder="Start Date"
           />
           <input
             type="date"
@@ -63,6 +97,7 @@ const SearchFilters = ({ filters, setFilters, onSearch }) => {
             value={filters.endDate}
             onChange={handleChange}
             className="p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+            placeholder="End Date"
           />
         </div>
         <select
@@ -92,24 +127,6 @@ const SearchFilters = ({ filters, setFilters, onSearch }) => {
           ))}
         </select>
       </div>
-      <div className="mt-4">
-        <h3 className="text-white font-semibold mb-2">Preferences</h3>
-        <div className="flex flex-wrap gap-2">
-          {sources.map((source) => (
-            <label key={source} className="inline-flex items-center">
-              <input
-                type="checkbox"
-                name="sources"
-                value={source}
-                checked={preferences.sources.includes(source)}
-                onChange={handlePreferenceChange}
-                className="form-checkbox h-5 w-5 text-blue-600"
-              />
-              <span className="ml-2 text-white">{source}</span>
-            </label>
-          ))}
-        </div>
-      </div>
       <div className="mt-4 flex justify-between">
         <button
           onClick={handleResetFilters}
@@ -118,7 +135,7 @@ const SearchFilters = ({ filters, setFilters, onSearch }) => {
           Reset Filters
         </button>
         <button
-          onClick={onSearch}
+          onClick={handleSearch}
           className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
         >
           Search

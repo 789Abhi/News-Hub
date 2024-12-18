@@ -27,7 +27,19 @@ const Search = () => {
 
   useEffect(() => {
     const keyword = queryParams.get("q") || "";
-    setFilters((prevFilters) => ({ ...prevFilters, keyword }));
+    const source = queryParams.get("source") || "";
+    const category = queryParams.get("category") || "";
+    const startDate = queryParams.get("startDate") || "";
+    const endDate = queryParams.get("endDate") || "";
+
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      keyword,
+      source,
+      category,
+      startDate,
+      endDate
+    }));
   }, [queryParams]);
 
   const handleSearch = () => {
@@ -46,13 +58,14 @@ const Search = () => {
   const filteredArticles = useMemo(() => {
     return articles.filter((article) => {
       const dateMatch =
-        (!filters.startDate ||
-          new Date(article.publishedAt) >= new Date(filters.startDate)) &&
-        (!filters.endDate ||
-          new Date(article.publishedAt) <= new Date(filters.endDate));
+        (!filters.startDate || 
+          new Date(article.publishedAt) >= new Date(filters.startDate + 'T00:00:00')) &&
+        (!filters.endDate || 
+          new Date(article.publishedAt) <= new Date(filters.endDate + 'T23:59:59'));
+      
       const sourceMatch = !filters.source || article.source === filters.source;
-      const categoryMatch =
-        !filters.category || article.category === filters.category;
+      const categoryMatch = !filters.category || article.category === filters.category;
+      
       return dateMatch && sourceMatch && categoryMatch;
     });
   }, [articles, filters]);
@@ -108,7 +121,10 @@ const Search = () => {
         setFilters={setFilters}
         onSearch={handleSearch}
       />
-      <ArticleList articles={filteredArticles} />
+      <ArticleList 
+        articles={filteredArticles} 
+        filters={filters}
+      />
     </div>
   );
 };

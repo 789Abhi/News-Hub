@@ -1,7 +1,28 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { SearchX } from "lucide-react";
 
-const ArticleList = React.memo(({ articles }) => {
+const ArticleList = React.memo(({ articles, filters }) => {
+  if (articles.length === 0) {
+    return (
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="flex flex-col items-center justify-center p-10 bg-gray-50 rounded-lg"
+      >
+        <SearchX className="text-gray-400 mb-4" size={64} />
+        <h2 className="text-2xl font-semibold text-gray-700 mb-3">
+          No Results Found
+        </h2>
+        <p className="text-gray-500 text-center mb-4">
+          We couldn't find any articles matching your search criteria.
+        </p>
+  
+      </motion.div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {articles.map((article, index) => (
